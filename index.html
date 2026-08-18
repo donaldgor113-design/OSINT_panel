@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'" />
+  <title>OSINT Command Center</title>
+  <link rel="stylesheet" href="css/app.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛰️</text></svg>" />
+</head>
+<body>
+
+  <!-- ===================== WATERMARK ===================== -->
+  <div class="watermark" id="watermark">
+    <span id="watermark-text">CONFIDENTIAL · analyst@intel.gov · OSINT-CC</span>
+  </div>
+
+  <!-- ===================== GLOBAL COMMAND PALETTE (Ctrl+K) ===================== -->
+  <div class="kbd-overlay hidden" id="palette-overlay"></div>
+  <div class="kbd-palette hidden" id="palette" role="dialog" aria-label="Global search">
+    <div class="kbd-palette__input-wrap">
+      <span class="kbd-palette__icon">🔎</span>
+      <input type="text" id="palette-input" class="kbd-palette__input"
+             placeholder="Фасетний пошук…  e.g. type:image source:telegram date:>2024.01.01" autocomplete="off" />
+      <span class="kbd-palette__hint">ESC</span>
+    </div>
+    <div class="kbd-palette__filter-chips" id="palette-chips"></div>
+    <div class="kbd-palette__results" id="palette-results">
+      <div class="kbd-palette__group">Швидкі дії</div>
+      <button class="kbd-palette__row" data-action="new-tab"><span>➕</span> Нова вкладка <span class="kbd-palette__key">Ctrl+T</span></button>
+      <button class="kbd-palette__row" data-action="report"><span>📄</span> Створити звіт <span class="kbd-palette__key">Ctrl+R</span></button>
+      <button class="kbd-palette__row" data-action="sources"><span>🔌</span> Відкрити менеджер джерел</button>
+      <button class="kbd-palette__row" data-action="ai"><span>🤖</span> AI Insights</button>
+      <button class="kbd-palette__row" data-action="export"><span>⛑️</span> Екстрений експорт</button>
+    </div>
+  </div>
+
+  <!-- ===================== REPORT WIZARD ===================== -->
+  <div class="modal-overlay hidden" id="report-overlay"></div>
+  <div class="modal hidden" id="report-modal" role="dialog" aria-label="Reporting engine">
+    <div class="modal__header">
+      <h2 class="modal__title">📄 Генератор звітів</h2>
+      <button class="modal__close" id="report-close">✕</button>
+    </div>
+    <div class="modal__body">
+      <label class="field-label">Крок 1 — Виберіть шаблон</label>
+      <div class="template-list" id="template-list">
+        <button class="template-card active" data-template="soc">
+          <span class="template-card__icon">🛡️</span>
+          <span>
+            <b>SOC-аналіз</b>
+            <small>Інциденти · Timeline · IOC</small>
+          </span>
+        </button>
+        <button class="template-card" data-template="geo">
+          <span class="template-card__icon">🗺️</span>
+          <span>
+            <b>Geo-розвідка</b>
+            <small>Мапа · Маршрути · Координати</small>
+          </span>
+        </button>
+        <button class="template-card" data-template="footprint">
+          <span class="template-card__icon">🌐</span>
+          <span>
+            <b>Digital Footprint</b>
+            <small>Соцмережі · Тональність · Згадки</small>
+          </span>
+        </button>
+      </div>
+
+      <label class="field-label">Крок 2 — Автоматичний мапінг полів</label>
+      <div class="fieldmap" id="fieldmap"></div>
+
+      <label class="field-label">Формат & параметри</label>
+      <div class="fieldmap fieldmap--row">
+        <label class="radio"><input type="radio" name="report-format" value="pdf" checked /> PDF</label>
+        <label class="radio"><input type="radio" name="report-format" value="docx" /> DOCX</label>
+        <label class="field-toggle">
+          <input type="checkbox" checked /> Додати графіки (Chart.js)
+        </label>
+        <label class="field-toggle">
+          <input type="checkbox" checked /> Водяний знак «Confidential»
+        </label>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <div class="progress-track hidden" id="report-progress">
+        <div class="progress-track__bar"><div class="progress-track__fill" id="report-progress-fill"></div></div>
+        <span class="progress-track__label" id="report-progress-label">Генерація… 0%</span>
+      </div>
+      <button class="btn btn--ghost" id="report-cancel">Скасувати</button>
+      <button class="btn btn--accent" id="report-generate">⚡ Згенерувати звіт</button>
+    </div>
+  </div>
+
+  <!-- ===================== EMERGENCY EXPORT ===================== -->
+  <div class="modal-overlay hidden" id="export-overlay"></div>
+  <div class="modal modal--sm hidden" id="export-modal">
+    <div class="modal__header">
+      <h2 class="modal__title">⛑️ Екстрений експорт</h2>
+      <button class="modal__close" id="export-close">✕</button>
+    </div>
+    <div class="modal__body">
+      <p class="export-note">Миттєва вигрузка всіх активних результатів у захищений архів. Файли підписуються водяним знаком аналітика.</p>
+      <div class="export-actions">
+        <button class="btn" id="export-full">📦 Повний дамп (.zip)</button>
+        <button class="btn" data-export="report">🗂️ Лише звіти (.pdf)</button>
+        <button class="btn" data-export="media">🖼️ Лише медіа (.zip)</button>
+      </div>
+      <div class="toast hidden" id="export-toast">✅ <span id="export-toast-text">Експорт розпочато</span></div>
+    </div>
+  </div>
+
+  <!-- ===================== NOTIFICATIONS PANEL ===================== -->
+  <div class="notif hidden" id="notif-panel">
+    <div class="notif__header">Сповіщення <span class="badge badge--accent">3</span></div>
+    <div class="notif__item"><span class="notif__dot notif__dot--red"></span><b>VirusTotal</b> — перевищено ліміт API (429)</div>
+    <div class="notif__item"><span class="notif__dot notif__dot--yellow"></span><b>Seja rute</b> — обробка завершена, 124 результати</div>
+    <div class="notif__item"><span class="notif__dot notif__dot--blue"></span><b>shodan</b> — знайдено новий порт</div>
+  </div>
+
+  <!-- ===================== APP SHELL ===================== -->
+  <div class="app" id="app">
+
+    <!-- ============ TOP NAVBAR ============ -->
+    <header class="navbar">
+      <div class="navbar__left">
+        <div class="logo">
+          <span class="logo__mark">🛰️</span>
+          <div class="logo__text">
+            <b>OSINT·CC</b>
+            <small>Command Center</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="navbar__center">
+        <button class="global-search" id="global-search" title="Глобальний пошук (Ctrl+K)">
+          <span class="global-search__icon">🔎</span>
+          <span class="global-search__placeholder">Пошук по всіх джерелах…</span>
+          <span class="kbd">Ctrl K</span>
+        </button>
+      </div>
+
+      <div class="navbar__right">
+        <div class="api-status api-status--exit hidden" id="api-status"><span class="api-status__pulse"></span> <span id="api-label">API online</span></div>
+        <button class="icon-btn" id="report-btn" title="Створити звіт (Ctrl+R)">📄</button>
+        <button class="btn btn--danger btn--sm" id="export-btn">⛑️ Екстрений експорт</button>
+        <button class="icon-btn icon-btn--badge" id="notif-btn" title="Сповіщення">🔔</button>
+        <div class="divider-v"></div>
+        <div class="avatar" title="analyst@intel.gov">OP</div>
+      </div>
+    </header>
+
+    <!-- ============ MAIN ROW ============ -->
+    <div class="shell">
+
+      <!-- ============ TAB WORKSPACE ============ -->
+      <main class="workspace" id="workspace">
+        <div class="tabbar" id="tabbar"></div>
+        <div class="workspace__split">
+          <!-- Vertical strument sub-menu (per active sources) -->
+          <nav class="submenu" id="submenu"></nav>
+
+          <!-- Canvas -->
+          <section class="canvas" id="canvas">
+            <div class="canvas__toolbar" id="canvas-toolbar">
+              <span class="canvas__view">Режим: <b id="view-label">Картки</b></span>
+              <div class="seg" id="view-switch">
+                <button class="seg__btn active" data-view="cards">▦ Картки</button>
+                <button class="seg__btn" data-view="json">{} JSON</button>
+                <button class="seg__btn" data-view="map">🗺️ Мапа</button>
+                <button class="seg__btn" data-view="media">🖼️ Медіа</button>
+              </div>
+              <div class="canvas__spacer"></div>
+              <button class="btn btn--ghost btn--sm" id="drag-hint">⤵ Drag & Drop</button>
+              <button class="btn btn--ghost btn--sm" id="clear-canvas">🗑 Очистити</button>
+            </div>
+
+            <div class="canvas__drop-zone hidden" id="drop-zone">
+              🫳 Перетягніть фрагмент сюди для порівняння
+            </div>
+
+            <div class="canvas__body" id="canvas-body">
+              <!-- rendered dynamically -->
+            </div>
+          </section>
+        </div>
+      </main>
+
+      <!-- ============ RIGHT SIDEBAR 280px ============ -->
+      <aside class="sidebar" id="sidebar">
+
+        <section class="panel">
+          <div class="panel__head">
+            <h3>🔌 Менеджер джерел</h3>
+            <button class="mini-btn" id="sources-toggle" title="Активувати всі">✓</button>
+          </div>
+          <div class="source-list" id="source-list">
+            <!-- rendered from mock data -->
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel__head"><h3>⚡ Швидкі фільтри</h3></div>
+          <label class="range-label">Період: <b id="range-value">2024–2026</b></label>
+          <input type="range" min="2020" max="2026" value="2024" id="range-date" class="range" />
+          <div class="toggles">
+            <label class="toggle">
+              <input type="checkbox" id="flt-img" checked /><span class="toggle__track"></span> Тільки зображення
+            </label>
+            <label class="toggle">
+              <input type="checkbox" id="flt-txt" checked /><span class="toggle__track"></span> Тільки текст
+            </label>
+            <label class="toggle">
+              <input type="checkbox" id="flt-geo" checked /><span class="toggle__track"></span> Тільки гео
+            </label>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel__head"><h3>🕐 Активні сесії</h3></div>
+          <div class="session-list" id="session-list">
+            <!-- rendered -->
+          </div>
+        </section>
+
+        <footer class="sidebar__foot">
+          <span class="fine">Сесія: <span id="session-timer">15:00</span> · 2FA ✓</span>
+          <span class="fine">CSP active · Proxy: on</span>
+        </footer>
+      </aside>
+    </div>
+  </div>
+
+  <!-- ===================== AI INSIGHTS ===================== -->
+  <div class="ai-widget" id="ai-widget">
+    <button class="ai-widget__head" id="ai-head">
+      <span class="ai-widget__orb"></span>
+      <b>AI Insights</b>
+      <span class="ai-widget__chev" id="ai-chev">▾</span>
+    </button>
+    <div class="ai-widget__body" id="ai-body">
+      <div class="ai-card ai-card--blue">
+        <svg viewBox="0 0 24 24" class="ai-card__icon"><path d="M2 13h2v2H2zM4 9h2v2H4zM6 5h2v2H6zM10 3h2v2h-2zM14 3h2v2h-2zM18 5h2v2h-2zM20 9h2v2h-2zM20 13h2v2h-2zM18 17h2v2h-2z" fill="currentColor"/></svg>
+        <div>
+          <b>Зв'язок IP → домени</b>
+          <p>IP <code>185.220.101.34</code> пов'язаний з <b>5 доменами</b> (TOR exit). Перекривається з поточним запитом.</p>
+        </div>
+      </div>
+      <div class="ai-card ai-card--orange">
+        <svg viewBox="0 0 24 24" class="ai-card__icon"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.3-6.3-4.6-6.3 4.6 2.3-7.3-6-4.4h7.6z" fill="currentColor"/></svg>
+        <div>
+          <b>Аномалія геолокації</b>
+          <p>Координати EXIF фото не збігаються з IP-localization на <b>2 300 км</b>.</p>
+        </div>
+      </div>
+      <div class="ai-card__prompt">
+        <input type="text" placeholder="Запитати AI про поточні дані…" />
+      </div>
+    </div>
+  </div>
+
+  <script src="js/mock-data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
