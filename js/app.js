@@ -366,7 +366,19 @@
     tokens.forEach((t) => {
       if (t.startsWith("type:")) pool = pool.filter((r) => r.type === t.slice(5) || r.tags.some((x) => x === t));
       else if (t.startsWith("source:")) pool = pool.filter((r) => r.source === t.slice(7));
-      else if (t.startsWith("date:")) pool = pool.filter((r) => r.date >= "2024-01-01");
+      else if (t.startsWith("date:")) {
+        const m = t.match(/^date:([><]?=?)(\d{4})-?(\d{2})?-?(\d{2})?$/);
+        if (m) {
+          const [_, op, y] = m;
+          const bound = (m[3] ? y + "-" + m[3] : y + "-12") + (m[4] ? "-" + m[4] : "-31");
+          pool = pool.filter((r) => {
+            const rd = r.date.replace(/[.\/]/g, "-");
+            if (op === ">") return rd > bound;
+            if (op === "<") return rd < bound;
+            return rd.startsWith(y);
+          });
+        }
+      }
       else if (t.startsWith("geo:")) pool = pool.filter((r) => r.tags.some((x) => x.startsWith("geo:")));
       else pool = pool.filter((r) => r.tags.some((x) => x === t) || r.title.toLowerCase().includes(t) || r.body.toLowerCase().includes(t));
     });

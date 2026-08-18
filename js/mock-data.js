@@ -24,7 +24,7 @@ window.OSINT_DATA = {
   sessions: [
     { id: "s1", source: "telegram", label: "monitoring /darkweb_ua", pct: 78, state: "run",   tooltip: "Парсинг каналів…" },
     { id: "s2", source: "shodan",   label: "scan 185.220.101.0/24", pct: 45, state: "run",   tooltip: "Сканування портів…" },
-    { id: "s3", source: "dorks",    label: "dork "*.gov.ua" config", pct: 100, state: "done", tooltip: "Завершено · 124 результати" },
+    { id: "s3", source: "dorks",    label: 'dork "*.gov.ua" config', pct: 100, state: "done", tooltip: "Завершено · 124 результати" },
     { id: "s4", source: "virustotal", label: "hash batch upload",   pct: 12, state: "err",  tooltip: "Помилка · ліміт API (429)" },
   ],
 
