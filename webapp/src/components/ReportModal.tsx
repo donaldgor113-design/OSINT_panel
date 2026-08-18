@@ -1,8 +1,15 @@
 import { useState } from "react";
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Box, Typography, Button,
-  List, ListItemButton, Radio, LinearProgress, Chip,
+  List, ListItemButton, Radio, LinearProgress, Chip, IconButton,
 } from "@mui/material";
+import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
+import CloseIcon from "@mui/icons-material/Close";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import BarChartIcon from "@mui/icons-material/BarChart";
+import WaterDropOutlinedIcon from "@mui/icons-material/WaterDropOutlined";
+import BoltIcon from "@mui/icons-material/Bolt";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { closeReport } from "@/store/uiSlice";
 import { setReportTemplate } from "@/store/workspaceSlice";
@@ -33,10 +40,13 @@ export default function ReportModal() {
   };
 
   return (
-    <Dialog open={open} onClose={close} fullWidth maxWidth="md" PaperProps={{ sx: { bgcolor: "#1A2B4C", border: "1px solid rgba(0,229,255,0.3)", borderRadius: 2.5 } }}>
-      <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 0 }}>
-        📄 Генератор звітів
-        <Button onClick={close} sx={{ color: "text.secondary", minWidth: 30 }}>✕</Button>
+    <Dialog open={open} onClose={close} fullWidth maxWidth="md" PaperProps={{ sx: { border: "1px solid rgba(139,92,246,0.3)", borderRadius: 2.5 } }}>
+      <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 0, gap: 1 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <DescriptionOutlinedIcon sx={{ fontSize: 20, color: "secondary.main" }} />
+          Генератор звітів
+        </Box>
+        <IconButton onClick={close} size="small" sx={{ color: "text.secondary" }}><CloseIcon fontSize="small" /></IconButton>
       </DialogTitle>
       <DialogContent>
         <Typography sx={{ fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: "text.secondary", fontWeight: 700, mt: 1, mb: 0.75 }}>
@@ -52,7 +62,7 @@ export default function ReportModal() {
                 onClick={() => dispatch(setReportTemplate(id))}
                 sx={{
                   borderRadius: 1.5, mb: 0.5,
-                  "&.Mui-selected": { bgcolor: "rgba(0,229,255,0.08)", border: "1px solid rgba(0,229,255,0.4)" },
+                  "&.Mui-selected": { bgcolor: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.4)" },
                 }}
               >
                 <Box sx={{ fontSize: 22, mr: 1 }}>{t.icon}</Box>
@@ -70,11 +80,16 @@ export default function ReportModal() {
         </Typography>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 0.6 }}>
           {template.fields.map((f) => (
-            <Box key={f.from} sx={{ display: "flex", alignItems: "center", gap: 1, fontSize: 12, color: "text.secondary", p: 0.75, borderRadius: 1, bgcolor: "rgba(10,14,23,0.9)", border: "1px solid rgba(255,255,255,0.07)" }}>
+            <Box key={f.from} sx={{ display: "flex", alignItems: "center", gap: 1, fontSize: 12, color: "text.secondary", p: 0.75, borderRadius: 1, bgcolor: "rgba(15,23,42,0.9)", border: "1px solid rgba(255,255,255,0.07)" }}>
               <b style={{ fontFamily: "monospace", fontSize: 11.5, color: "text.primary", flex: 1 }}>{f.from}</b>
-              <span style={{ color: "#00E5FF" }}>→</span>
+              <span style={{ color: "#8B5CF6" }}>→</span>
               <span>{f.to}</span>
-              <Chip label={f.status === "warn" ? "⚠ ручне" : "✓ авто"} size="small" sx={{ fontSize: 10.5, height: 18, color: f.status === "warn" ? "warning.main" : "success.main" }} />
+              <Chip
+                icon={f.status === "warn" ? <WarningAmberIcon sx={{ fontSize: "13px !important" }} /> : <CheckCircleOutlineIcon sx={{ fontSize: "13px !important" }} />}
+                label={f.status === "warn" ? "ручне" : "авто"}
+                size="small"
+                sx={{ fontSize: 10.5, height: 18, color: f.status === "warn" ? "warning.main" : "success.main", "& .MuiChip-icon": { color: "inherit" } }}
+              />
             </Box>
           ))}
         </Box>
@@ -89,21 +104,22 @@ export default function ReportModal() {
           <Box onClick={() => setFormat("docx")} sx={{ display: "flex", alignItems: "center", gap: 0.5, cursor: "pointer" }}>
             <Radio checked={format === "docx"} size="small" /> DOCX
           </Box>
-          <Chip label="📊 Графіки" size="small" sx={{ fontSize: 11 }} />
-          <Chip label="💧 Водяний знак" size="small" sx={{ fontSize: 11 }} />
+          <Chip icon={<BarChartIcon sx={{ fontSize: "14px !important" }} />} label="Графіки" size="small" sx={{ fontSize: 11 }} />
+          <Chip icon={<WaterDropOutlinedIcon sx={{ fontSize: "14px !important" }} />} label="Водяний знак" size="small" sx={{ fontSize: 11 }} />
         </Box>
 
         {progress !== null && (
           <Box sx={{ mt: 2, display: "flex", alignItems: "center", gap: 1.5 }}>
-            <LinearProgress variant="determinate" value={progress} sx={{ flex: 1, height: 6, borderRadius: 4, bgcolor: "#2A3F6B" }} />
+            <LinearProgress variant="determinate" value={progress} sx={{ flex: 1, height: 6, borderRadius: 4, bgcolor: "#475569" }} />
             <Typography sx={{ fontSize: 11, fontFamily: "monospace", color: done ? "success.main" : "text.secondary" }}>
-              {done ? "✓ Готово" : progress + "%"}
+              {done ? "Готово" : progress + "%"}
             </Typography>
           </Box>
         )}
         {done && (
-          <Typography sx={{ mt: 1, color: "success.main", fontSize: 12 }}>
-            ✓ Звіт «{template.name}».{format} згенеровано та підписано водяним знаком
+          <Typography sx={{ mt: 1.5, color: "success.main", fontSize: 12.5, display: "flex", alignItems: "center", gap: 0.75 }}>
+            <CheckCircleOutlineIcon sx={{ fontSize: 16 }} />
+            Звіт «{template.name}».{format} згенеровано та підписано водяним знаком
           </Typography>
         )}
       </DialogContent>
@@ -111,11 +127,12 @@ export default function ReportModal() {
         <Button onClick={close} sx={{ color: "text.secondary" }}>Скасувати</Button>
         <Button
           variant="contained"
+          startIcon={<BoltIcon sx={{ fontSize: 16 }} />}
           onClick={generate}
           disabled={progress !== null && !done}
-          sx={{ bgcolor: "primary.main", color: "#04121F", fontWeight: 800, boxShadow: "0 0 14px rgba(0,229,255,0.35)", "&:hover": { filter: "brightness(1.1)" } }}
+          sx={{ bgcolor: "secondary.main", color: "#fff", fontWeight: 600, "&:hover": { filter: "brightness(1.1)" } }}
         >
-          ⚡ Згенерувати звіт
+          Згенерувати звіт
         </Button>
       </DialogActions>
     </Dialog>

@@ -2,6 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Dialog, DialogTitle, DialogContent, Box, TextField, Typography, Chip, List, ListItemButton,
 } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import AddIcon from "@mui/icons-material/Add";
+import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import TagIcon from "@mui/icons-material/Tag";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { closePalette, openPalette, openReport, openExport } from "@/store/uiSlice";
 import { addTab, setTabResults } from "@/store/workspaceSlice";
@@ -9,10 +15,10 @@ import { FACETS, RESULTS } from "@/data/mock";
 import type { Result } from "@/types";
 
 const QUICK_ACTIONS = [
-  { action: "new-tab", icon: "➕", label: "Нова вкладка", key: "Ctrl+T" },
-  { action: "report", icon: "📄", label: "Створити звіт", key: "Ctrl+R" },
-  { action: "export", icon: "⛑️", label: "Екстрений експорт", key: "" },
-  { action: "ai", icon: "🤖", label: "AI Insights", key: "" },
+  { action: "new-tab", icon: AddIcon, label: "Нова вкладка", key: "Ctrl+T" },
+  { action: "report", icon: DescriptionOutlinedIcon, label: "Створити звіт", key: "Ctrl+R" },
+  { action: "export", icon: WarningAmberIcon, label: "Екстрений експорт", key: "" },
+  { action: "ai", icon: AutoAwesomeIcon, label: "AI Insights", key: "" },
 ];
 
 export default function SearchPalette() {
@@ -86,11 +92,11 @@ export default function SearchPalette() {
       onClose={() => dispatch(closePalette())}
       fullWidth
       maxWidth="sm"
-      PaperProps={{ sx: { bgcolor: "#1A2B4C", border: "1px solid rgba(0,229,255,0.3)", borderRadius: 2.5, boxShadow: "0 20px 60px rgba(0,0,0,0.7)" } }}
+      PaperProps={{ sx: { border: "1px solid rgba(139,92,246,0.3)", borderRadius: 2.5, boxShadow: "0 20px 60px rgba(0,0,0,0.7)" } }}
     >
       <DialogTitle sx={{ p: 0 }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, px: 2, py: 1.5, borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-          <Typography>🔎</Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, px: 2.5, py: 1.75, borderBottom: 1, borderColor: "divider" }}>
+          <SearchIcon sx={{ color: "text.faint", fontSize: 20 }} />
           <TextField
             autoFocus
             fullWidth
@@ -107,7 +113,7 @@ export default function SearchPalette() {
       <DialogContent sx={{ p: 0.5, minHeight: 200 }}>
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, px: 1.5, py: 1 }}>
           {q.split(/\s+/).filter((f) => /^(type|source|date|geo|risk):/.test(f)).map((f) => (
-            <Chip key={f} label={f} size="small" sx={{ color: "primary.main", border: "1px solid rgba(0,229,255,0.3)" }} />
+            <Chip key={f} label={f} size="small" sx={{ color: "secondary.main", border: "1px solid rgba(139,92,246,0.3)" }} />
           ))}
         </Box>
         <List dense>
@@ -118,12 +124,13 @@ export default function SearchPalette() {
                   Знайдено джерел: {facetRows.length}
                 </Typography>
                 {facetRows.map((f) => (
-                  <ListItemButton key={f} onClick={() => setQ((prev) => (prev.trim() ? prev.trim() + " " + f : f))} sx={{ fontSize: 13 }}>
-                    <Chip label="#" size="small" sx={{ mr: 1, fontSize: 10 }} /> {f}
+                  <ListItemButton key={f} onClick={() => setQ((prev) => (prev.trim() ? prev.trim() + " " + f : f))} sx={{ fontSize: 13, gap: 1 }}>
+                    <TagIcon sx={{ fontSize: 15, color: "text.faint" }} /> {f}
                   </ListItemButton>
                 ))}
-                <ListItemButton onClick={() => runSearch(q)} sx={{ fontSize: 13 }}>
-                  🔎 Виконати розумний пошук: <b style={{ color: "#00E5FF" }}>{q}</b>
+                <ListItemButton onClick={() => runSearch(q)} sx={{ fontSize: 13, gap: 1 }}>
+                  <SearchIcon sx={{ fontSize: 15, color: "text.faint" }} />
+                  Виконати розумний пошук: <b style={{ color: "#8B5CF6" }}>{q}</b>
                 </ListItemButton>
               </>
             )
@@ -133,8 +140,9 @@ export default function SearchPalette() {
                   Швидкі дії
                 </Typography>
                 {QUICK_ACTIONS.map((a) => (
-                  <ListItemButton key={a.action} onClick={() => runAction(a.action)} sx={{ fontSize: 13 }}>
-                    <span>{a.icon}</span>&nbsp;{a.label}
+                  <ListItemButton key={a.action} onClick={() => runAction(a.action)} sx={{ fontSize: 13, gap: 1 }}>
+                    <a.icon sx={{ fontSize: 16, color: "text.faint" }} />
+                    {a.label}
                     {a.key && <Chip label={a.key} size="small" sx={{ ml: "auto", fontFamily: "monospace", fontSize: 10 }} />}
                   </ListItemButton>
                 ))}

@@ -1,6 +1,10 @@
-import { Box, Chip, Typography } from "@mui/material";
+import { Box, Card, Chip, Typography } from "@mui/material";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ErrorIcon from "@mui/icons-material/Error";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import type { Result, SourceId } from "@/types";
 import { SOURCES } from "@/data/mock";
+import { SourceIcon } from "@/utils/sourceIcons";
 
 const SRC_ERR: Record<string, string> = {
   virustotal: "VirusTotal повернув 429 (rate limit). Ключ перевищив квоту.",
@@ -16,72 +20,72 @@ function tagCls(t: string): string {
 }
 
 const chipColors: Record<string, string> = {
-  type: "#00E5FF",
-  src: "#FF6D00",
-  geo: "#2EFFB0",
-  ioc: "#FF4D5E",
+  type: "#8B5CF6",
+  src: "#F59E0B",
+  geo: "#10B981",
+  ioc: "#EF4444",
 };
 
-function srcIcon(id: SourceId) {
-  return SOURCES.find((s) => s.id === id)?.icon ?? "";
-}
 function srcColor(id: SourceId) {
   return SOURCES.find((s) => s.id === id)?.color ?? "";
 }
 
 export default function CardsView({ results }: { results: Result[] }) {
   return (
-    <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))", gap: 1.75 }}>
+    <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 2 }}>
       {results.map((r) => (
-        <Box
+        <Card
           key={r.id}
           draggable
           sx={{
-            p: 1.75, borderRadius: 2, cursor: "grab",
-            bgcolor: "#1A2B4C",
-            border: 1,
-            borderColor: r.ok ? "rgba(255,255,255,0.07)" : "rgba(255,77,94,0.6)",
-            background: r.ok ? undefined : "rgba(255,77,94,0.05)",
-            transition: "all .18s",
-            "&:hover": { transform: "translateY(-3px)", borderColor: "rgba(0,229,255,0.4)", boxShadow: "0 8px 30px rgba(0,0,0,0.45)" },
+            p: 2, cursor: "grab",
+            borderColor: r.ok ? undefined : "rgba(239,68,68,0.5)",
+            bgcolor: r.ok ? "background.paper" : "rgba(239,68,68,0.04)",
             "&:active": { cursor: "grabbing" },
           }}
           onDragStart={(e) => e.dataTransfer.setData("text/plain", r.id)}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.25 }}>
-            <Typography sx={{ fontSize: 10, letterSpacing: 1, textTransform: "uppercase", color: srcColor(r.source) }}>
-              {srcIcon(r.source)} {r.source}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 1.5 }}>
+            <SourceIcon id={r.source} sx={{ fontSize: 14, color: srcColor(r.source) }} />
+            <Typography sx={{ fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", color: srcColor(r.source), fontWeight: 600 }}>
+              {r.source}
             </Typography>
-            <Typography sx={{ ml: "auto", fontSize: 11, color: "text.faint" }}>{r.date}</Typography>
+            <Typography sx={{ ml: "auto", fontSize: 12, color: "text.faint" }}>{r.date}</Typography>
           </Box>
-          <Typography sx={{ fontSize: 13, fontWeight: 700, mb: 0.75 }}>{r.title}</Typography>
-          <Typography sx={{ fontSize: 12.5, color: "text.secondary", lineHeight: 1.55 }}>{r.body}</Typography>
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 1.25 }}>
+          <Typography sx={{ fontSize: 14, fontWeight: 600, mb: 0.75, lineHeight: 1.4 }}>{r.title}</Typography>
+          <Typography sx={{ fontSize: 13, color: "text.secondary", lineHeight: 1.6 }}>{r.body}</Typography>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, mt: 1.5 }}>
             {r.tags.map((t) => (
               <Chip
                 key={t}
                 label={t}
                 size="small"
                 sx={{
-                  fontSize: 10.5, height: 20,
-                  color: chipColors[tagCls(t)] ?? "#00E5FF",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  bgcolor: "rgba(13,19,34,0.9)",
+                  fontSize: 10.5, height: 22, fontWeight: 500, textTransform: "none",
+                  color: chipColors[tagCls(t)] ?? "#8B5CF6",
+                  border: `1px solid ${chipColors[tagCls(t)] ?? "#8B5CF6"}40`,
+                  bgcolor: "background.default",
                 }}
               />
             ))}
           </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1.25 }}>
-            <Typography sx={{ fontSize: 11, fontWeight: 700, color: r.ok ? "success.main" : "error.main" }}>
-              {r.ok ? "● Успішно" : "● Помилка"}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.6, mt: 1.5, pt: 1.5, borderTop: 1, borderColor: "divider" }}>
+            {r.ok ? (
+              <CheckCircleIcon sx={{ fontSize: 15, color: "success.main" }} />
+            ) : (
+              <ErrorIcon sx={{ fontSize: 15, color: "error.main" }} />
+            )}
+            <Typography sx={{ fontSize: 12, fontWeight: 500, color: r.ok ? "success.main" : "error.main" }}>
+              {r.ok ? "Успішно" : "Помилка"}
             </Typography>
           </Box>
           {!r.ok && (
-            <Typography sx={{ fontSize: 12, color: "error.main", mt: 1, display: "flex", gap: 0.75 }}>
-              ⚠ {SRC_ERR[r.source] ?? "Помилка отримання даних від джерела."}
+            <Typography sx={{ fontSize: 12, color: "error.main", mt: 1, display: "flex", alignItems: "flex-start", gap: 0.75 }}>
+              <WarningAmberIcon sx={{ fontSize: 15, mt: "1px" }} />
+              {SRC_ERR[r.source] ?? "Помилка отримання даних від джерела."}
             </Typography>
           )}
-        </Box>
+        </Card>
       ))}
     </Box>
   );

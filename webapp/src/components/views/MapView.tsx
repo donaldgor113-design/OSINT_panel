@@ -17,15 +17,15 @@ export default function MapView() {
       <Box
         sx={{
           position: "absolute", bottom: 12, left: 12,
-          bgcolor: "rgba(10,14,23,0.85)", border: "1px solid rgba(255,255,255,0.07)",
+          bgcolor: "rgba(15,23,42,0.85)", border: "1px solid rgba(255,255,255,0.07)",
           borderRadius: 1.5, px: 1.5, py: 1, fontSize: 11, color: "text.secondary",
           display: "flex", gap: 1.75,
         }}
       >
-        <Legend color="#00E5FF" label="IP-вузол" />
-        <Legend color="#FFD60A" label="Геолокація" />
-        <Legend color="#FF6D00" label="Хостинг" />
-        <Legend color="#FF4D5E" label="C2" />
+        <Legend color="#8B5CF6" label="IP-вузол" />
+        <Legend color="#F59E0B" label="Геолокація" />
+        <Legend color="#3B82F6" label="Хостинг" />
+        <Legend color="#EF4444" label="C2" />
       </Box>
     </Box>
   );

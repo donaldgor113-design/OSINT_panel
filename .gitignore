@@ -5,3 +5,12 @@ build/
 *.log
 .DS_Store
 Thumbs.db
+
+# Python / backend
+backend/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Claude Code local settings (machine-specific permissions)
+.claude/settings.local.json

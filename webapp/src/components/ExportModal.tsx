@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { Dialog, DialogTitle, DialogContent, DialogActions, Box, Typography, Button, Alert } from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, DialogActions, Box, Typography, Button, Alert, IconButton } from "@mui/material";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import CloseIcon from "@mui/icons-material/Close";
+import ArchiveOutlinedIcon from "@mui/icons-material/ArchiveOutlined";
+import FolderZipOutlinedIcon from "@mui/icons-material/FolderZipOutlined";
+import PermMediaOutlinedIcon from "@mui/icons-material/PermMediaOutlined";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { closeExport } from "@/store/uiSlice";
 
@@ -14,21 +19,30 @@ export default function ExportModal() {
   };
 
   return (
-    <Dialog open={open} onClose={() => dispatch(closeExport())} fullWidth maxWidth="xs" PaperProps={{ sx: { bgcolor: "#1A2B4C", border: "1px solid rgba(0,229,255,0.3)", borderRadius: 2.5 } }}>
-      <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 0 }}>
-        ⛑️ Екстрений експорт
-        <Button onClick={() => dispatch(closeExport())} sx={{ color: "text.secondary", minWidth: 30 }}>✕</Button>
+    <Dialog open={open} onClose={() => dispatch(closeExport())} fullWidth maxWidth="xs" PaperProps={{ sx: { border: "1px solid rgba(139,92,246,0.3)", borderRadius: 2.5 } }}>
+      <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 0, gap: 1 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <WarningAmberIcon sx={{ fontSize: 20, color: "error.main" }} />
+          Екстрений експорт
+        </Box>
+        <IconButton onClick={() => dispatch(closeExport())} size="small" sx={{ color: "text.secondary" }}><CloseIcon fontSize="small" /></IconButton>
       </DialogTitle>
       <DialogContent>
-        <Typography sx={{ fontSize: 13, color: "text.secondary", lineHeight: 1.6, mb: 2 }}>
+        <Typography sx={{ fontSize: 13, color: "text.secondary", lineHeight: 1.6, mb: 2.5 }}>
           Миттєва вигрузка всіх активних результатів у захищений архів. Файли підписуються водяним знаком аналітика.
         </Typography>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-          <Button variant="outlined" onClick={() => doExport("Повний дамп зібрано · watermarking done")}>📦 Повний дамп (.zip)</Button>
-          <Button variant="outlined" onClick={() => doExport("Експорт звітів розпочато")}>🗂️ Лише звіти (.pdf)</Button>
-          <Button variant="outlined" onClick={() => doExport("Експорт медіа розпочато")}>🖼️ Лише медіа (.zip)</Button>
+          <Button variant="outlined" startIcon={<ArchiveOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => doExport("Повний дамп зібрано · watermarking done")} sx={{ justifyContent: "flex-start" }}>
+            Повний дамп (.zip)
+          </Button>
+          <Button variant="outlined" startIcon={<FolderZipOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => doExport("Експорт звітів розпочато")} sx={{ justifyContent: "flex-start" }}>
+            Лише звіти (.pdf)
+          </Button>
+          <Button variant="outlined" startIcon={<PermMediaOutlinedIcon sx={{ fontSize: 18 }} />} onClick={() => doExport("Експорт медіа розпочато")} sx={{ justifyContent: "flex-start" }}>
+            Лише медіа (.zip)
+          </Button>
         </Box>
-        {toast && <Alert severity="success" sx={{ mt: 1.5 }}>{toast}</Alert>}
+        {toast && <Alert severity="success" sx={{ mt: 2 }}>{toast}</Alert>}
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={() => dispatch(closeExport())} sx={{ color: "text.secondary" }}>Закрити</Button>

@@ -1,4 +1,11 @@
 import { Box, ToggleButton, ToggleButtonGroup, Button, Typography } from "@mui/material";
+import ViewModuleIcon from "@mui/icons-material/ViewModule";
+import DataObjectIcon from "@mui/icons-material/DataObject";
+import MapIcon from "@mui/icons-material/Map";
+import PermMediaIcon from "@mui/icons-material/PermMedia";
+import OpenWithIcon from "@mui/icons-material/OpenWith";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import SatelliteAltIcon from "@mui/icons-material/SatelliteAlt";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setTabView, setTabResults } from "@/store/workspaceSlice";
 import CardsView from "./CardsView";
@@ -7,10 +14,10 @@ import MapView from "./MapView";
 import MediaView from "./MediaView";
 
 const VIEWS = [
-  { id: "cards" as const, label: "▦ Картки" },
-  { id: "json" as const, label: "{} JSON" },
-  { id: "map" as const, label: "🗺️ Мапа" },
-  { id: "media" as const, label: "🖼️ Медіа" },
+  { id: "cards" as const, label: "Картки", icon: ViewModuleIcon },
+  { id: "json" as const, label: "JSON", icon: DataObjectIcon },
+  { id: "map" as const, label: "Мапа", icon: MapIcon },
+  { id: "media" as const, label: "Медіа", icon: PermMediaIcon },
 ];
 
 export default function Canvas() {
@@ -26,17 +33,11 @@ export default function Canvas() {
     <Box sx={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, minHeight: 0 }}>
       <Box
         sx={{
-          height: 46, flexShrink: 0, px: 1.5,
-          display: "flex", alignItems: "center", gap: 1.5,
-          borderBottom: "1px solid rgba(255,255,255,0.07)", bgcolor: "rgba(13,19,34,0.6)",
+          height: 56, flexShrink: 0, px: 2,
+          display: "flex", alignItems: "center", gap: 2,
+          borderBottom: 1, borderColor: "divider", bgcolor: "background.paper",
         }}
       >
-        <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
-          Режим:{" "}
-          <Box component="b" sx={{ color: "text.primary" }}>
-            {VIEWS.find((v) => v.id === tab.view)?.label}
-          </Box>
-        </Typography>
         <ToggleButtonGroup
           size="small"
           exclusive
@@ -44,21 +45,25 @@ export default function Canvas() {
           onChange={(_, v) => v && setView(v)}
         >
           {VIEWS.map((v) => (
-            <ToggleButton key={v.id} value={v.id} sx={{ fontSize: 12, py: 0.4 }}>
+            <ToggleButton key={v.id} value={v.id} sx={{ fontSize: 13, py: 0.6, px: 1.5, gap: 0.75 }}>
+              <v.icon sx={{ fontSize: 16 }} />
               {v.label}
             </ToggleButton>
           ))}
         </ToggleButtonGroup>
         <Box sx={{ flex: 1 }} />
-        <Button size="small" variant="text" sx={{ color: "text.secondary" }} onClick={() => { /* DnD hint */ }}>
-          ⤵ Drag & Drop
+        <Button size="small" variant="text" startIcon={<OpenWithIcon sx={{ fontSize: 16 }} />} sx={{ color: "text.secondary" }}>
+          Drag &amp; Drop
         </Button>
-        <Button size="small" variant="text" sx={{ color: "text.secondary" }} onClick={() => dispatch(setTabResults({ tabId: tab.id, results: [] }))}>
-          🗑 Очистити
+        <Button
+          size="small" variant="text" startIcon={<DeleteOutlineIcon sx={{ fontSize: 16 }} />} sx={{ color: "text.secondary" }}
+          onClick={() => dispatch(setTabResults({ tabId: tab.id, results: [] }))}
+        >
+          Очистити
         </Button>
       </Box>
 
-      <Box sx={{ flex: 1, overflow: "auto", p: 2, position: "relative", minHeight: 0 }}>
+      <Box sx={{ flex: 1, overflow: "auto", p: 2.5, position: "relative", minHeight: 0 }}>
         {tab.results.length === 0 && tab.view !== "map" && tab.view !== "media" ? (
           <EmptyState />
         ) : (
@@ -77,9 +82,9 @@ export default function Canvas() {
 function EmptyState() {
   return (
     <Box sx={{ height: "60%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 1.5, color: "text.faint" }}>
-      <Typography sx={{ fontSize: 46 }}>🛰️</Typography>
-      <Typography sx={{ fontSize: 15, color: "text.secondary" }}>Канва порожня</Typography>
-      <Typography sx={{ fontSize: 12 }}>
+      <SatelliteAltIcon sx={{ fontSize: 42 }} />
+      <Typography sx={{ fontSize: 16, fontWeight: 500, color: "text.secondary" }}>Канва порожня</Typography>
+      <Typography sx={{ fontSize: 13 }}>
         Активуйте джерела зправа або зробіть запит через глобальний пошук (Ctrl+K)
       </Typography>
     </Box>

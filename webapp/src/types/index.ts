@@ -91,3 +91,90 @@ export interface ReportTemplate {
 }
 
 export type ReportTemplateId = "soc" | "geo" | "footprint";
+
+// Analysis Lab
+export type EntityType = "person" | "company" | "address" | "phone" | "email";
+
+export interface Entity {
+  id: string;
+  type: EntityType;
+  label: string;
+  meta?: string;
+  confidence: number;
+}
+
+export interface Relationship {
+  id: string;
+  source: string;
+  target: string;
+  type: string;
+  confidence: number;
+}
+
+export interface TimelineEvent {
+  id: string;
+  date: string;
+  title: string;
+  description: string;
+  source: SourceId;
+  confidence: number;
+}
+
+// AI Assistant
+export type AgentType = "research" | "analysis" | "verification" | "report";
+export type AgentTaskStatus = "queued" | "running" | "completed" | "failed";
+
+export interface AgentTask {
+  id: string;
+  agentType: AgentType;
+  description: string;
+  status: AgentTaskStatus;
+  progress: number;
+  confidence?: number;
+}
+
+export interface ChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  text: string;
+  time: string;
+}
+
+// Tools: Browsers / APIs
+export interface BrowserProfile {
+  id: string;
+  name: string;
+  status: "idle" | "running" | "offline";
+  proxy: string;
+  sessions: number;
+}
+
+export interface ApiIntegration {
+  id: string;
+  name: string;
+  status: "connected" | "disconnected" | "rate_limited";
+  quota: string;
+  lastUsed: string;
+}
+
+// Reports archive
+export interface ReportArchiveItem {
+  id: string;
+  title: string;
+  template: ReportTemplateId;
+  createdAt: string;
+  status: "draft" | "final";
+  format: "pdf" | "docx";
+}
+
+// Audit
+export interface AuditLogEntry {
+  id: string;
+  eventType: string;
+  user: string;
+  resource: string;
+  action: string;
+  status: "success" | "failure";
+  ip: string;
+  time: string;
+}

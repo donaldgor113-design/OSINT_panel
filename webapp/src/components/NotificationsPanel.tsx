@@ -3,10 +3,12 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { closeNotifications } from "@/store/uiSlice";
 
 const ITEMS = [
-  { dot: "red", text: [["VirusTotal", "b"], ["Перевищено ліміт API (429)", "s"]] },
-  { dot: "yellow", text: [["Сеанс", "b"], ["Обробка завершена, 124 результати", "s"]] },
-  { dot: "blue", text: [["shodan", "b"], ["Знайдено новий порт", "s"]] },
+  { dot: "red", title: "VirusTotal", body: "Перевищено ліміт API (429)" },
+  { dot: "yellow", title: "Сеанс", body: "Обробка завершена, 124 результати" },
+  { dot: "blue", title: "shodan", body: "Знайдено новий порт" },
 ];
+
+const DOT_COLOR: Record<string, string> = { red: "#EF4444", yellow: "#F59E0B", blue: "#8B5CF6" };
 
 export default function NotificationsPanel() {
   const dispatch = useAppDispatch();
@@ -16,21 +18,21 @@ export default function NotificationsPanel() {
     <ClickAwayListener onClickAway={() => dispatch(closeNotifications())}>
       <Paper
         sx={{
-          position: "fixed", top: 66, right: 12, zIndex: 300,
-          width: 320, bgcolor: "#1A2B4C",
+          position: "fixed", top: 72, right: 20, zIndex: 300,
+          width: 340,
           display: open ? "block" : "none",
         }}
       >
-        <Box sx={{ px: 1.75, py: 1.25, borderBottom: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", gap: 0.75 }}>
-          <Typography sx={{ fontSize: 12, fontWeight: 700 }}>Сповіщення</Typography>
-          <Chip label="3" size="small" sx={{ bgcolor: "#FF6D00", color: "#fff", fontSize: 10, height: 18 }} />
+        <Box sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: "divider", display: "flex", alignItems: "center", gap: 1 }}>
+          <Typography sx={{ fontSize: 13, fontWeight: 600 }}>Сповіщення</Typography>
+          <Chip label="3" size="small" sx={{ bgcolor: "#F59E0B", color: "#fff", fontSize: 10, height: 18 }} />
         </Box>
         {ITEMS.map((item, i) => (
-          <Box key={i} sx={{ display: "flex", alignItems: "flex-start", gap: 1, p: 1.25, borderBottom: "1px solid rgba(255,255,255,0.05)", fontSize: 12, color: "text.secondary", lineHeight: 1.5 }}>
-            <span style={{ width: 8, height: 8, borderRadius: "50%", flexShrink: 0, marginTop: 4, background: { red: "#FF4D5E", yellow: "#FFD60A", blue: "#00E5FF" }[item.dot] as string, boxShadow: "0 0 8px rgba(255,255,255,0.2)" }} />
+          <Box key={i} sx={{ display: "flex", alignItems: "flex-start", gap: 1.25, p: 1.5, borderBottom: 1, borderColor: "divider", fontSize: 13, color: "text.secondary", lineHeight: 1.5 }}>
+            <Box sx={{ width: 8, height: 8, borderRadius: "50%", flexShrink: 0, mt: "5px", bgcolor: DOT_COLOR[item.dot] }} />
             <Box>
-              <Box component="b" sx={{ color: "text.primary" }}>{item.text[0][0]}</Box>{" "}
-              {item.text[0][1]}
+              <Box component="b" sx={{ color: "text.primary" }}>{item.title}</Box>{" "}
+              {item.body}
             </Box>
           </Box>
         ))}

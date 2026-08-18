@@ -17,8 +17,8 @@ export default function Workspace() {
       <Box
         sx={{
           display: "flex", alignItems: "center", gap: 0.5,
-          height: 40, px: 1, flexShrink: 0,
-          bgcolor: "#0D1322", borderBottom: "1px solid rgba(0,229,255,0.14)",
+          height: 44, px: 1.5, flexShrink: 0,
+          bgcolor: "background.default", borderBottom: 1, borderColor: "divider",
           overflowX: "auto",
         }}
       >
@@ -29,7 +29,7 @@ export default function Workspace() {
           scrollButtons={false}
           sx={{
             flex: 1, minHeight: 40,
-            "& .MuiTabs-indicator": { bgcolor: "primary.main", height: 2 },
+            "& .MuiTabs-indicator": { bgcolor: "secondary.main", height: 2 },
           }}
         >
           {tabs.map((t) => {
@@ -43,7 +43,7 @@ export default function Workspace() {
                     <Box
                       sx={{
                         width: 7, height: 7, borderRadius: "50%", flexShrink: 0,
-                        bgcolor: hasErr ? "#FF4D5E" : "rgba(90,106,140,0.6)",
+                        bgcolor: hasErr ? "#EF4444" : "rgba(90,106,140,0.6)",
                       }}
                     />
                     <span>{t.title}</span>

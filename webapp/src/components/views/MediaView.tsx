@@ -12,14 +12,14 @@ export default function MediaView() {
             aspectRatio: "4/3", borderRadius: 2, overflow: "hidden",
             border: "1px solid rgba(255,255,255,0.07)", position: "relative", cursor: "zoom-in",
             transition: "all .18s",
-            "&:hover": { borderColor: "primary.main", boxShadow: "0 0 14px rgba(0,229,255,0.35)", transform: "scale(1.02)" },
+            "&:hover": { borderColor: "secondary.main", boxShadow: "0 0 14px rgba(139,92,246,0.35)", transform: "scale(1.02)" },
           }}
         >
           <Box className={`media-ph--${m.pal}`} sx={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44 }}>
             {m.type === "video" ? "🎬" : "🖼️"}
           </Box>
           {m.type === "video" && (
-            <Box sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 40, height: 40, borderRadius: "50%", bgcolor: "rgba(0,229,255,0.25)", border: "1px solid #00E5FF", display: "flex", alignItems: "center", justifyContent: "center", color: "#00E5FF" }}>
+            <Box sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 40, height: 40, borderRadius: "50%", bgcolor: "rgba(139,92,246,0.25)", border: "1px solid #8B5CF6", display: "flex", alignItems: "center", justifyContent: "center", color: "#8B5CF6" }}>
               ▶
             </Box>
           )}
@@ -32,7 +32,7 @@ export default function MediaView() {
           >
             {m.label}
           </Box>
-          <Box sx={{ position: "absolute", top: 8, right: 8, fontSize: 10, color: "success.main", bgcolor: "rgba(0,0,0,0.6)", px: 0.75, py: 0.25, borderRadius: 0.7, border: "1px solid rgba(46,255,176,0.3)" }}>
+          <Box sx={{ position: "absolute", top: 8, right: 8, fontSize: 10, color: "success.main", bgcolor: "rgba(0,0,0,0.6)", px: 0.75, py: 0.25, borderRadius: 0.7, border: "1px solid rgba(16,185,129,0.3)" }}>
             {m.exif}
           </Box>
         </Box>

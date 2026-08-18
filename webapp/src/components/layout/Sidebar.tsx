@@ -3,8 +3,25 @@ import {
   Box, Typography, Checkbox, Slider, Divider, LinearProgress, Tooltip, IconButton,
 } from "@mui/material";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
+import HubOutlinedIcon from "@mui/icons-material/HubOutlined";
+import TuneIcon from "@mui/icons-material/Tune";
+import ScheduleIcon from "@mui/icons-material/Schedule";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ErrorIcon from "@mui/icons-material/Error";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { toggleSource, toggleAllSources, setFilters, tickSessions } from "@/store/workspaceSlice";
+import { SourceIcon } from "@/utils/sourceIcons";
+
+function SectionHeader({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
+      <Box sx={{ display: "flex", color: "text.faint" }}>{icon}</Box>
+      <Typography sx={{ fontSize: 12, letterSpacing: 1, textTransform: "uppercase", color: "text.secondary", fontWeight: 600 }}>
+        {children}
+      </Typography>
+    </Box>
+  );
+}
 
 export default function Sidebar() {
   const dispatch = useAppDispatch();
@@ -20,24 +37,22 @@ export default function Sidebar() {
   return (
     <Box
       sx={{
-        width: 280,
+        width: 300,
         flexShrink: 0,
-        bgcolor: "#0D1322",
-        borderLeft: "1px solid rgba(0,229,255,0.14)",
+        bgcolor: "background.default",
+        borderLeft: (t) => `1px solid ${t.palette.divider}`,
         overflowY: "auto",
         display: "flex",
         flexDirection: "column",
       }}
     >
       {/* Sources */}
-      <Box sx={{ p: 1.75 }}>
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
-          <Typography sx={{ fontSize: 12, letterSpacing: 1, textTransform: "uppercase", color: "text.secondary", fontWeight: 700 }}>
-            🔌 Менеджер джерел
-          </Typography>
+      <Box sx={{ p: 2.5 }}>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
+          <SectionHeader icon={<HubOutlinedIcon sx={{ fontSize: 16 }} />}>Менеджер джерел</SectionHeader>
           <Tooltip title="Активувати всі">
             <IconButton size="small" onClick={() => dispatch(toggleAllSources())}>
-              <DoneAllIcon sx={{ fontSize: 15, color: "text.secondary" }} />
+              <DoneAllIcon sx={{ fontSize: 16, color: "text.secondary" }} />
             </IconButton>
           </Tooltip>
         </Box>
@@ -45,40 +60,41 @@ export default function Sidebar() {
           <Box
             key={s.id}
             sx={{
-              display: "flex", alignItems: "center", gap: 1, py: 0.6, px: 0.8,
-              borderRadius: 1, cursor: "pointer",
-              "&:hover": { bgcolor: "rgba(0,229,255,0.05)" },
+              display: "flex", alignItems: "center", gap: 1, py: 0.9, px: 1,
+              borderRadius: 1.5, cursor: "pointer",
+              "&:hover": { bgcolor: "rgba(139,92,246,0.06)" },
             }}
           >
             <Checkbox
               size="small"
               checked={s.active}
               onChange={() => dispatch(toggleSource(s.id))}
-              sx={{ p: 0.2, color: "primary.main" }}
+              sx={{ p: 0.3, color: "secondary.main" }}
             />
-            <Typography sx={{ fontSize: 12.5, color: s.color }}>{s.name}</Typography>
-            <Box sx={{ ml: "auto", display: "flex", alignItems: "center", gap: 0.8 }}>
-              <Typography sx={{ fontSize: 9.5, color: s.online ? "success.main" : "text.faint", border: 1, borderColor: "rgba(255,255,255,0.08)", px: 0.6, borderRadius: 5 }}>
+            <SourceIcon id={s.id} sx={{ fontSize: 16, color: s.color, flexShrink: 0 }} />
+            <Typography sx={{ fontSize: 13, color: "text.primary" }}>{s.name}</Typography>
+            <Box sx={{ ml: "auto", display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography
+                sx={{
+                  fontSize: 10, color: s.online ? "success.main" : "text.faint",
+                  border: 1, borderColor: "divider", px: 0.8, py: 0.1, borderRadius: 5,
+                }}
+              >
                 {s.online ? "online" : "down"}
-              </Typography>
-              <Typography sx={{ fontSize: 10, color: s.active ? "success.main" : "text.faint" }}>
-                {s.active ? "активний" : "вимк."}
               </Typography>
             </Box>
           </Box>
         ))}
       </Box>
 
-      <Divider sx={{ borderColor: "rgba(255,255,255,0.07)" }} />
+      <Divider />
 
       {/* Quick filters */}
-      <Box sx={{ p: 1.75 }}>
-        <Typography sx={{ fontSize: 12, letterSpacing: 1, textTransform: "uppercase", color: "text.secondary", fontWeight: 700, mb: 1 }}>
-          ⚡ Швидкі фільтри
-        </Typography>
-        <Box sx={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: "text.secondary" }}>
+      <Box sx={{ p: 2.5 }}>
+        <SectionHeader icon={<TuneIcon sx={{ fontSize: 16 }} />}>Швидкі фільтри</SectionHeader>
+        <Box sx={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "text.secondary", mb: 0.5 }}>
           <span>Період:</span>
-          <b style={{ color: "#00E5FF", fontFamily: "monospace" }}>{filters.from}–2026</b>
+          <b style={{ color: "#8B5CF6", fontFamily: "monospace" }}>{filters.from}–2026</b>
         </Box>
         <Slider
           min={2020}
@@ -87,46 +103,52 @@ export default function Sidebar() {
           value={filters.from}
           onChange={(_, v) => dispatch(setFilters({ from: v as number }))}
           size="small"
-          sx={{ color: "primary.main" }}
+          sx={{ color: "secondary.main" }}
         />
-        <FilterToggle label="Тільки зображення" checked={filters.img} onChange={(v) => dispatch(setFilters({ img: v }))} />
-        <FilterToggle label="Тільки текст" checked={filters.txt} onChange={(v) => dispatch(setFilters({ txt: v }))} />
-        <FilterToggle label="Тільки гео" checked={filters.geo} onChange={(v) => dispatch(setFilters({ geo: v }))} />
+        <Box sx={{ mt: 0.5 }}>
+          <FilterToggle label="Тільки зображення" checked={filters.img} onChange={(v) => dispatch(setFilters({ img: v }))} />
+          <FilterToggle label="Тільки текст" checked={filters.txt} onChange={(v) => dispatch(setFilters({ txt: v }))} />
+          <FilterToggle label="Тільки гео" checked={filters.geo} onChange={(v) => dispatch(setFilters({ geo: v }))} />
+        </Box>
       </Box>
 
-      <Divider sx={{ borderColor: "rgba(255,255,255,0.07)" }} />
+      <Divider />
 
       {/* Sessions */}
-      <Box sx={{ p: 1.75 }}>
-        <Typography sx={{ fontSize: 12, letterSpacing: 1, textTransform: "uppercase", color: "text.secondary", fontWeight: 700, mb: 1 }}>
-          🕐 Активні сесії
-        </Typography>
+      <Box sx={{ p: 2.5 }}>
+        <SectionHeader icon={<ScheduleIcon sx={{ fontSize: 16 }} />}>Активні сесії</SectionHeader>
         {sessions.map((s) => (
-          <Box key={s.id} sx={{ mb: 1.25, p: 1, borderRadius: 1, bgcolor: "rgba(10,14,23,0.9)", border: "1px solid rgba(255,255,255,0.07)" }}>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 0.5 }}>
-              <Typography sx={{ fontSize: 12, fontWeight: 600 }}>{s.label}</Typography>
-              <Typography
-                sx={{
-                  fontSize: 11, fontFamily: "monospace",
-                  color: s.state === "done" ? "success.main" : s.state === "err" ? "error.main" : "primary.main",
-                }}
-              >
-                {s.state === "done" ? "✓ 100%" : s.state === "err" ? "✕ помилка" : s.pct + "%"}
+          <Box key={s.id} sx={{ mb: 1.5, p: 1.5, borderRadius: 2, bgcolor: "background.paper", border: (t) => `1px solid ${t.palette.divider}` }}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1, mb: 0.75 }}>
+              <Typography sx={{ fontSize: 13, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {s.label}
               </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexShrink: 0 }}>
+                {s.state === "done" && <CheckCircleIcon sx={{ fontSize: 14, color: "success.main" }} />}
+                {s.state === "err" && <ErrorIcon sx={{ fontSize: 14, color: "error.main" }} />}
+                <Typography
+                  sx={{
+                    fontSize: 11, fontFamily: "monospace",
+                    color: s.state === "done" ? "success.main" : s.state === "err" ? "error.main" : "secondary.main",
+                  }}
+                >
+                  {s.state === "done" ? "100%" : s.state === "err" ? "помилка" : s.pct + "%"}
+                </Typography>
+              </Box>
             </Box>
             <LinearProgress
               variant="determinate"
               value={s.state === "err" ? 0 : s.state === "done" ? 100 : s.pct}
-              color={s.state === "err" ? "error" : s.pct > 70 ? "warning" : "primary"}
-              sx={{ height: 5, borderRadius: 4, bgcolor: "#2A3F6B" }}
+              color={s.state === "err" ? "error" : s.pct > 70 ? "warning" : "secondary"}
+              sx={{ height: 5, borderRadius: 4, bgcolor: "divider" }}
             />
-            <Typography sx={{ fontSize: 10.5, color: "text.faint", mt: 0.5 }}>{s.tooltip}</Typography>
+            <Typography sx={{ fontSize: 11, color: "text.faint", mt: 0.75 }}>{s.tooltip}</Typography>
           </Box>
         ))}
       </Box>
 
-      <Box sx={{ mt: "auto", p: 1.5, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
-        <Typography sx={{ fontSize: 10.5, color: "text.faint", lineHeight: 1.8 }}>
+      <Box sx={{ mt: "auto", p: 2, borderTop: (t) => `1px solid ${t.palette.divider}` }}>
+        <Typography sx={{ fontSize: 11, color: "text.faint", lineHeight: 1.8 }}>
           Сесія: <SessionTimer /> · 2FA ✓
           <br />CSP active · Proxy: on
         </Typography>
@@ -137,14 +159,14 @@ export default function Sidebar() {
 
 function FilterToggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1, cursor: "pointer", my: 0.6 }}>
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1, cursor: "pointer", my: 0.4 }}>
       <Checkbox
         size="small"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        sx={{ p: 0.2, color: "primary.main" }}
+        sx={{ p: 0.3, color: "secondary.main" }}
       />
-      <Typography sx={{ fontSize: 12, color: "text.secondary" }}>{label}</Typography>
+      <Typography sx={{ fontSize: 13, color: "text.secondary" }}>{label}</Typography>
     </Box>
   );
 }
@@ -157,5 +179,5 @@ function SessionTimer() {
   }, []);
   const m = String(Math.floor(secs / 60)).padStart(2, "0");
   const s = String(secs % 60).padStart(2, "0");
-  return <b style={{ fontFamily: "monospace", color: secs <= 60 ? "#FF4D5E" : "#FF6D00" }}>{m}:{s}</b>;
+  return <b style={{ fontFamily: "monospace", color: secs <= 60 ? "#EF4444" : "#F59E0B" }}>{m}:{s}</b>;
 }
