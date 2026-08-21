@@ -4,16 +4,18 @@ import HubOutlinedIcon from "@mui/icons-material/HubOutlined";
 import SecurityIcon from "@mui/icons-material/Security";
 import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
+import FactCheckOutlinedIcon from "@mui/icons-material/FactCheckOutlined";
 import PageHeader from "@/components/common/PageHeader";
-import { useAppSelector } from "@/store/hooks";
-import { SourceIcon } from "@/utils/sourceIcons";
+import RegistriesPanel from "@/components/tools/RegistriesPanel";
+import AuditLogTable from "@/components/settings/AuditLogTable";
 
-type Section = "registries" | "security" | "ai" | "profile";
+type Section = "registries" | "security" | "ai" | "profile" | "audit";
 const TABS: { id: Section; label: string; icon: typeof HubOutlinedIcon }[] = [
   { id: "registries", label: "Реєстри", icon: HubOutlinedIcon },
   { id: "security", label: "Безпека", icon: SecurityIcon },
   { id: "ai", label: "AI", icon: AutoAwesomeOutlinedIcon },
   { id: "profile", label: "Профіль", icon: PersonOutlineIcon },
+  { id: "audit", label: "Аудит-лог", icon: FactCheckOutlinedIcon },
 ];
 
 function Row({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
@@ -30,11 +32,10 @@ function Row({ label, hint, children }: { label: string; hint?: string; children
 
 export default function Settings() {
   const [section, setSection] = useState<Section>("registries");
-  const sources = useAppSelector((s) => s.workspace.sources);
 
   return (
-    <Box sx={{ flex: 1, overflow: "auto", p: 3, maxWidth: 800 }}>
-      <PageHeader title="Налаштування" subtitle="Облікові дані реєстрів, безпека, AI та профіль аналітика" />
+    <Box sx={{ flex: 1, overflow: "auto", p: 3, maxWidth: 900 }}>
+      <PageHeader title="Налаштування" subtitle="Реєстри, безпека, AI, профіль аналітика та аудит-лог" />
 
       <Tabs value={section} onChange={(_, v) => setSection(v)} sx={{ mb: 3 }}>
         {TABS.map((t) => (
@@ -42,21 +43,7 @@ export default function Settings() {
         ))}
       </Tabs>
 
-      {section === "registries" && (
-        <Card sx={{ p: 2.5 }}>
-          {sources.map((s, i) => (
-            <Box key={s.id}>
-              {i > 0 && <Divider />}
-              <Box sx={{ py: 1.75, display: "flex", alignItems: "center", gap: 1.5 }}>
-                <SourceIcon id={s.id} sx={{ fontSize: 17, color: s.color, flexShrink: 0 }} />
-                <Typography sx={{ fontSize: 13.5, fontWeight: 500, width: 140, flexShrink: 0 }}>{s.name}</Typography>
-                <TextField size="small" placeholder="API-ключ / логін" fullWidth type="password" />
-                <Button size="small" variant="outlined" sx={{ flexShrink: 0 }}>Зберегти</Button>
-              </Box>
-            </Box>
-          ))}
-        </Card>
-      )}
+      {section === "registries" && <RegistriesPanel />}
 
       {section === "security" && (
         <Card sx={{ p: 2.5 }}>
@@ -99,13 +86,15 @@ export default function Settings() {
       )}
 
       {section === "profile" && (
-        <Card sx={{ p: 2.5, display: "flex", flexDirection: "column", gap: 2 }}>
+        <Card sx={{ p: 2.5, display: "flex", flexDirection: "column", gap: 2, maxWidth: 500 }}>
           <TextField size="small" label="Ім'я користувача" defaultValue="analyst_1" />
           <TextField size="small" label="Email" defaultValue="analyst@intel.gov" />
           <TextField size="small" label="Мова інтерфейсу" defaultValue="Українська" />
           <Button variant="contained" color="secondary" sx={{ alignSelf: "flex-start" }}>Зберегти профіль</Button>
         </Card>
       )}
+
+      {section === "audit" && <AuditLogTable />}
     </Box>
   );
 }

@@ -54,3 +54,53 @@ export interface ApiQueryDetail extends ApiQuery {
 export interface ApiError {
   error: { code: string; message: string; details?: Record<string, unknown> };
 }
+
+// ── Entity-centric model (OSINT_HUB_MODULE_ARCHITECTURE.md) ─────────────────
+export type EntityType = "person" | "legal_entity" | "vehicle" | "location" | "account" | "contact" | "asset";
+export type Confidence = "confirmed" | "probable" | "unverified";
+
+export interface ApiCase {
+  id: string;
+  title: string;
+  description: string | null;
+  goal: string | null;
+  case_type: string | null;
+  status: string;
+  classification: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ApiEntity {
+  id: string;
+  case_id: string | null;
+  entity_type: EntityType;
+  display_name: string;
+  confidence: Confidence;
+  created_at: string;
+  updated_at: string;
+  details: Record<string, unknown>;
+}
+
+export interface ApiRelationship {
+  id: string;
+  source_entity_id: string;
+  target_entity_id: string;
+  relationship_type: string;
+  description: string | null;
+  confidence: Confidence;
+  created_at: string;
+}
+
+export interface ApiEvent {
+  id: string;
+  case_id: string;
+  entity_id: string | null;
+  event_date: string | null;
+  title: string;
+  description: string | null;
+  confidence: Confidence;
+  created_at: string;
+}
