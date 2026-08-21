@@ -105,4 +105,5 @@ async def query_registry(
     )
 
     results = json.loads(decrypt_secret(query.result_data_encrypted)) if query.result_data_encrypted else []
-    return RegistryQueryResponse(query_id=query.id, result_count=query.result_count or 0, results=results)
+    error = query.tags.get("error") if query.tags else None
+    return RegistryQueryResponse(query_id=query.id, result_count=query.result_count or 0, results=results, error=error)

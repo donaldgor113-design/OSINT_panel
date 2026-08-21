@@ -7,6 +7,7 @@ import {
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AddIcon from "@mui/icons-material/Add";
 import ChecklistIcon from "@mui/icons-material/Checklist";
+import SearchIcon from "@mui/icons-material/Search";
 import { getCase, listCaseEntities, listCaseRelationships, listCaseEvents } from "@/api/cases";
 import type { ApiCase, ApiEntity, ApiRelationship, ApiEvent } from "@/types/api";
 import { ENTITY_FIELDS, ENTITY_TYPE_COLOR, ENTITY_TYPE_ICON, ENTITY_TYPE_LABEL, CONFIDENCE_COLOR, CONFIDENCE_LABEL } from "@/utils/entityFields";
@@ -50,6 +51,9 @@ export default function CaseDetail() {
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
         <IconButton size="small" onClick={() => navigate("/cases")}><ArrowBackIcon fontSize="small" /></IconButton>
         <Typography sx={{ fontSize: 20, fontWeight: 600, flex: 1 }}>{caseData.title}</Typography>
+        <Button size="small" variant="outlined" startIcon={<SearchIcon sx={{ fontSize: 16 }} />} onClick={() => navigate(`/cases/${id}/search`)}>
+          Пошук через джерела
+        </Button>
         <Chip label={caseData.status} size="small" sx={{ fontSize: 10 }} />
       </Box>
       {caseData.goal && <Typography sx={{ fontSize: 13, color: "text.secondary", mb: 2, ml: 5 }}>{caseData.goal}</Typography>}

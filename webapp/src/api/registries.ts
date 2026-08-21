@@ -15,7 +15,7 @@ export async function queryRegistry(
   id: string,
   queryText: string,
   filters?: Record<string, unknown>
-): Promise<{ query_id: string; result_count: number; results: Record<string, unknown>[] }> {
+): Promise<{ query_id: string; result_count: number; results: Record<string, unknown>[]; error: string | null }> {
   const { data } = await apiClient.post(`/registries/${id}/query`, { query_text: queryText, filters });
   return data;
 }

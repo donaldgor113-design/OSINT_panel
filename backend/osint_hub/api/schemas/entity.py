@@ -15,12 +15,16 @@ class EntityCreate(BaseModel):
     details: dict[str, Any] = {}
     source_module: str | None = None
     source_name: str | None = None
+    query_id: uuid.UUID | None = None
 
 
 class EntityUpdate(BaseModel):
     display_name: str | None = None
     confidence: Confidence | None = None
     details: dict[str, Any] | None = None
+    source_module: str | None = None
+    source_name: str | None = None
+    query_id: uuid.UUID | None = None
 
 
 class EntityPublic(BaseModel):

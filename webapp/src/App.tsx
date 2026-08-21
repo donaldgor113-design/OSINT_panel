@@ -12,6 +12,7 @@ import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import Cases from "@/pages/Cases";
 import CaseDetail from "@/pages/CaseDetail";
+import CaseSearch from "@/pages/CaseSearch";
 import Surveillance from "@/pages/Surveillance";
 import RecognitionLab from "@/pages/RecognitionLab";
 import Monitoring from "@/pages/Monitoring";
@@ -43,6 +44,7 @@ function AppShell() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/cases" element={<Cases />} />
             <Route path="/cases/:id" element={<CaseDetail />} />
+            <Route path="/cases/:id/search" element={<CaseSearch />} />
             <Route path="/surveillance" element={<Surveillance />} />
             <Route path="/recognition" element={<RecognitionLab />} />
             <Route path="/monitoring" element={<Monitoring />} />

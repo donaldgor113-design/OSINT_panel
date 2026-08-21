@@ -31,11 +31,23 @@ export async function listCaseEntities(caseId: string): Promise<ApiEntity[]> {
   return data;
 }
 
-export async function createEntity(
-  caseId: string,
-  payload: { entity_type: string; display_name: string; confidence?: string; details?: Record<string, unknown> }
-): Promise<ApiEntity> {
+export interface EntityWritePayload {
+  entity_type?: string;
+  display_name?: string;
+  confidence?: string;
+  details?: Record<string, unknown>;
+  source_module?: string;
+  source_name?: string;
+  query_id?: string;
+}
+
+export async function createEntity(caseId: string, payload: EntityWritePayload): Promise<ApiEntity> {
   const { data } = await apiClient.post<ApiEntity>(`/cases/${caseId}/entities`, payload);
+  return data;
+}
+
+export async function updateEntity(entityId: string, payload: EntityWritePayload): Promise<ApiEntity> {
+  const { data } = await apiClient.patch<ApiEntity>(`/entities/${entityId}`, payload);
   return data;
 }
 

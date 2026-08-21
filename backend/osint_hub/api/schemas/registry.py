@@ -53,3 +53,4 @@ class RegistryQueryResponse(BaseModel):
     query_id: uuid.UUID
     result_count: int
     results: list[dict[str, Any]]
+    error: str | None = None

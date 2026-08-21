@@ -28,6 +28,28 @@ async def _entity_to_detail(db: AsyncSession, entity: Entity) -> EntityDetail:
     return EntityDetail(**EntityDetail.model_validate(entity).model_dump(exclude={"details"}), details=details)
 
 
+def _record_provenance(
+    entity_id: uuid.UUID,
+    field_names: list[str],
+    *,
+    source_module: str | None,
+    source_name: str | None,
+    query_id: uuid.UUID | None,
+    confidence: str,
+    user_id: uuid.UUID,
+) -> FieldProvenance:
+    return FieldProvenance(
+        entity_id=entity_id,
+        field_name=",".join(field_names),
+        source_module=source_module or "manual",
+        source_name=source_name,
+        query_id=query_id,
+        retrieved_at=datetime.now(timezone.utc),
+        retrieved_by=user_id,
+        confidence=confidence,
+    )
+
+
 async def _get_own_entity_or_404(db: AsyncSession, entity_id: uuid.UUID, user: User) -> Entity:
     result = await db.execute(
         select(Entity).join(Entity.case).where(Entity.id == entity_id, Entity.case.has(user_id=user.id))
@@ -63,14 +85,14 @@ async def create_entity(
 
     if payload.details:
         db.add(
-            FieldProvenance(
-                entity_id=entity.id,
-                field_name=",".join(payload.details.keys()),
-                source_module=payload.source_module or "manual",
+            _record_provenance(
+                entity.id,
+                list(payload.details.keys()),
+                source_module=payload.source_module,
                 source_name=payload.source_name,
-                retrieved_at=datetime.now(timezone.utc),
-                retrieved_by=current_user.id,
+                query_id=payload.query_id,
                 confidence=payload.confidence,
+                user_id=current_user.id,
             )
         )
 
@@ -116,6 +138,17 @@ async def update_entity(
         entity.confidence = payload.confidence
     if payload.details:
         await update_details(db, entity.entity_type, entity.id, payload.details)
+        db.add(
+            _record_provenance(
+                entity.id,
+                list(payload.details.keys()),
+                source_module=payload.source_module,
+                source_name=payload.source_name,
+                query_id=payload.query_id,
+                confidence=payload.confidence or entity.confidence,
+                user_id=current_user.id,
+            )
+        )
 
     await db.commit()
     await db.refresh(entity)
