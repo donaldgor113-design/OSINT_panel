@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from osint_hub.api.middleware.error_handler import register_error_handlers
-from osint_hub.api.routes import auth, capture, cases, entities, queries, registries
+from osint_hub.api.routes import auth, capture, cases, entities, queries, registries, reports
 from osint_hub.config import get_settings
 
 settings = get_settings()
@@ -25,6 +25,7 @@ app.include_router(queries.router, prefix=settings.api_v1_prefix)
 app.include_router(cases.router, prefix=settings.api_v1_prefix)
 app.include_router(entities.router, prefix=settings.api_v1_prefix)
 app.include_router(capture.router, prefix=settings.api_v1_prefix)
+app.include_router(reports.router, prefix=settings.api_v1_prefix)
 
 
 @app.get("/health")

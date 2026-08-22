@@ -402,3 +402,32 @@ class CaptureItem(Base):
         Index("idx_capture_items_uploaded_by", "uploaded_by"),
         Index("idx_capture_items_status", "status"),
     )
+
+
+class Report(Base):
+    """A generated report: template + snapshot of entity-model data for a case,
+    rendered at generation time (doc §8 — report = template + entity fields)."""
+
+    __tablename__ = "reports"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    case_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("cases.id", ondelete="CASCADE"), nullable=False)
+    primary_entity_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("entities.id", ondelete="SET NULL"))
+
+    template_id: Mapped[str] = mapped_column(String(50), nullable=False)  # person_dossier|legal_entity_dossier|surveillance_report|recognition_report
+    title: Mapped[str] = mapped_column(String(500), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), default="draft")  # draft|final
+
+    content_html: Mapped[str | None] = mapped_column(Text)
+    content_json: Mapped[dict | None] = mapped_column(JSONB)  # structured snapshot, reused for DOCX export
+    missing_fields: Mapped[list | None] = mapped_column(JSONB)
+    exported_formats: Mapped[dict | None] = mapped_column(JSONB)  # {"docx": "2026-08-22T...", ...}
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    __table_args__ = (
+        Index("idx_reports_user_id", "user_id"),
+        Index("idx_reports_case_id", "case_id"),
+    )

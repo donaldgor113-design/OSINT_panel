@@ -9,10 +9,12 @@ import AddIcon from "@mui/icons-material/Add";
 import ChecklistIcon from "@mui/icons-material/Checklist";
 import SearchIcon from "@mui/icons-material/Search";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
+import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import { getCase, listCaseEntities, listCaseRelationships, listCaseEvents } from "@/api/cases";
 import type { ApiCase, ApiEntity, ApiRelationship, ApiEvent } from "@/types/api";
 import { ENTITY_FIELDS, ENTITY_TYPE_COLOR, ENTITY_TYPE_ICON, ENTITY_TYPE_LABEL, CONFIDENCE_COLOR, CONFIDENCE_LABEL } from "@/utils/entityFields";
 import AddEntityDialog from "@/components/cases/AddEntityDialog";
+import GenerateReportDialog from "@/components/reports/GenerateReportDialog";
 
 export default function CaseDetail() {
   const { id } = useParams<{ id: string }>();
@@ -23,6 +25,7 @@ export default function CaseDetail() {
   const [events, setEvents] = useState<ApiEvent[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
 
   const load = () => {
     if (!id) return;
@@ -54,6 +57,9 @@ export default function CaseDetail() {
         <Typography sx={{ fontSize: 20, fontWeight: 600, flex: 1 }}>{caseData.title}</Typography>
         <Button size="small" variant="outlined" startIcon={<SearchIcon sx={{ fontSize: 16 }} />} onClick={() => navigate(`/cases/${id}/search`)}>
           Пошук через джерела
+        </Button>
+        <Button size="small" variant="outlined" color="secondary" startIcon={<DescriptionOutlinedIcon sx={{ fontSize: 16 }} />} onClick={() => setReportOpen(true)}>
+          Сформувати звіт
         </Button>
         <Chip label={caseData.status} size="small" sx={{ fontSize: 10 }} />
       </Box>
@@ -156,6 +162,7 @@ export default function CaseDetail() {
         onClose={() => setAddOpen(false)}
         onCreated={(e) => setEntities((prev) => [...prev, e])}
       />
+      <GenerateReportDialog caseId={caseData.id} open={reportOpen} onClose={() => setReportOpen(false)} />
     </Box>
   );
 }

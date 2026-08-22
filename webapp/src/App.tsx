@@ -18,6 +18,7 @@ import RecognitionLab from "@/pages/RecognitionLab";
 import Monitoring from "@/pages/Monitoring";
 import CaptureInbox from "@/pages/CaptureInbox";
 import Reports from "@/pages/Reports";
+import ReportDetail from "@/pages/ReportDetail";
 import Graph from "@/pages/Graph";
 import Settings from "@/pages/Settings";
 import MapPage from "@/pages/MapPage";
@@ -50,6 +51,7 @@ function AppShell() {
             <Route path="/monitoring" element={<Monitoring />} />
             <Route path="/capture" element={<CaptureInbox />} />
             <Route path="/reports" element={<Reports />} />
+            <Route path="/reports/:id" element={<ReportDetail />} />
             <Route path="/graph" element={<Graph />} />
             <Route path="/settings" element={<Settings />} />
 

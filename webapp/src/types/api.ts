@@ -121,3 +121,40 @@ export interface ApiCaptureItem {
   uploaded_at: string;
   attached_at: string | null;
 }
+
+// ── Report Generator ────────────────────────────────────────────────────────
+export interface ApiTemplateField {
+  entity_type: string;
+  field_key: string;
+  label: string;
+  required: boolean;
+}
+
+export interface ApiReportTemplate {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  primary_entity_type: EntityType | null;
+  primary_fields: ApiTemplateField[];
+  related_sections: { entity_type: string; label: string }[];
+}
+
+export type ReportStatus = "draft" | "final";
+
+export interface ApiReport {
+  id: string;
+  case_id: string;
+  primary_entity_id: string | null;
+  template_id: string;
+  title: string;
+  status: ReportStatus;
+  missing_fields: string[] | null;
+  exported_formats: Record<string, string> | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ApiReportDetail extends ApiReport {
+  content_html: string | null;
+}
