@@ -8,6 +8,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AddIcon from "@mui/icons-material/Add";
 import ChecklistIcon from "@mui/icons-material/Checklist";
 import SearchIcon from "@mui/icons-material/Search";
+import AttachFileIcon from "@mui/icons-material/AttachFile";
 import { getCase, listCaseEntities, listCaseRelationships, listCaseEvents } from "@/api/cases";
 import type { ApiCase, ApiEntity, ApiRelationship, ApiEvent } from "@/types/api";
 import { ENTITY_FIELDS, ENTITY_TYPE_COLOR, ENTITY_TYPE_ICON, ENTITY_TYPE_LABEL, CONFIDENCE_COLOR, CONFIDENCE_LABEL } from "@/utils/entityFields";
@@ -102,6 +103,14 @@ export default function CaseDetail() {
                   {Object.entries(e.details).filter(([, v]) => v).map(([k, v]) => (
                     <Typography key={k} sx={{ fontSize: 11.5, color: "text.secondary" }}>{k}: {String(v)}</Typography>
                   ))}
+                  {e.media_count > 0 && (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 1, pt: 1, borderTop: 1, borderColor: "divider" }}>
+                      <AttachFileIcon sx={{ fontSize: 13, color: "text.faint" }} />
+                      <Typography sx={{ fontSize: 11, color: "text.faint" }}>
+                        {e.media_count} файл{e.media_count === 1 ? "" : e.media_count < 5 ? "и" : "ів"} з Capture Inbox
+                      </Typography>
+                    </Box>
+                  )}
                 </Card>
               ))}
             </Box>

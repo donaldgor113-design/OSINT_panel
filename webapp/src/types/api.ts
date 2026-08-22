@@ -82,6 +82,7 @@ export interface ApiEntity {
   created_at: string;
   updated_at: string;
   details: Record<string, unknown>;
+  media_count: number;
 }
 
 export interface ApiRelationship {
@@ -103,4 +104,20 @@ export interface ApiEvent {
   description: string | null;
   confidence: Confidence;
   created_at: string;
+}
+
+// ── Capture Inbox ─────────────────────────────────────────────────────────
+export type CaptureStatus = "pending" | "attached" | "discarded";
+
+export interface ApiCaptureItem {
+  id: string;
+  file_name: string;
+  media_type: string | null;
+  file_size_bytes: number | null;
+  notes: string | null;
+  status: CaptureStatus;
+  case_id: string | null;
+  entity_id: string | null;
+  uploaded_at: string;
+  attached_at: string | null;
 }

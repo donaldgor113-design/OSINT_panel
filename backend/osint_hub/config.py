@@ -22,6 +22,9 @@ class Settings(BaseSettings):
 
     api_v1_prefix: str = "/api/v1"
 
+    storage_dir: str = "storage/captures"
+    max_upload_size_mb: int = 25
+
 
 @lru_cache
 def get_settings() -> Settings:

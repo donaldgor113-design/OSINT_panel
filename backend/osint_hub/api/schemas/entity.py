@@ -41,6 +41,7 @@ class EntityPublic(BaseModel):
 
 class EntityDetail(EntityPublic):
     details: dict[str, Any] = {}
+    media_count: int = 0
 
 
 class RelationshipCreate(BaseModel):

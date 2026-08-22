@@ -374,3 +374,31 @@ class EntityMedia(Base):
     __table_args__ = (
         Index("idx_entity_media_entity_id", "entity_id"),
     )
+
+
+class CaptureItem(Base):
+    """Capture Inbox staging area: files land here untagged, then get manually attached
+    to a case/entity (Phase 1 — manual tagging only, no OCR/Vision AI yet)."""
+
+    __tablename__ = "capture_items"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    uploaded_by: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+
+    file_name: Mapped[str] = mapped_column(String(500), nullable=False)
+    file_path: Mapped[str] = mapped_column(String(1000), nullable=False)
+    media_type: Mapped[str | None] = mapped_column(String(50))  # image|video|document|other
+    file_size_bytes: Mapped[int | None] = mapped_column(Integer)
+    notes: Mapped[str | None] = mapped_column(Text)
+
+    status: Mapped[str] = mapped_column(String(20), default="pending")  # pending|attached|discarded
+    case_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("cases.id", ondelete="SET NULL"))
+    entity_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("entities.id", ondelete="SET NULL"))
+
+    uploaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    attached_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    __table_args__ = (
+        Index("idx_capture_items_uploaded_by", "uploaded_by"),
+        Index("idx_capture_items_status", "status"),
+    )

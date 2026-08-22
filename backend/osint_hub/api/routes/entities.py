@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from osint_hub.api.routes.cases import _get_own_case_or_404
@@ -18,14 +18,21 @@ from osint_hub.api.schemas.entity import (
 from osint_hub.core.entities.details import create_details, get_details_dict, update_details
 from osint_hub.dependencies import get_current_user
 from osint_hub.infrastructure.database.connection import get_db
-from osint_hub.infrastructure.database.models import Entity, Event, FieldProvenance, Relationship, User
+from osint_hub.infrastructure.database.models import Entity, EntityMedia, Event, FieldProvenance, Relationship, User
 
 router = APIRouter(tags=["entities"])
 
 
 async def _entity_to_detail(db: AsyncSession, entity: Entity) -> EntityDetail:
     details = await get_details_dict(db, entity.entity_type, entity.id)
-    return EntityDetail(**EntityDetail.model_validate(entity).model_dump(exclude={"details"}), details=details)
+    media_count = await db.scalar(
+        select(func.count()).select_from(EntityMedia).where(EntityMedia.entity_id == entity.id)
+    )
+    return EntityDetail(
+        **EntityDetail.model_validate(entity).model_dump(exclude={"details", "media_count"}),
+        details=details,
+        media_count=media_count or 0,
+    )
 
 
 def _record_provenance(
