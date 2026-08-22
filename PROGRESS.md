@@ -20,6 +20,7 @@
   - `users`, `sessions`, `audit_logs`, `registries`, `queries` — базова інфраструктура
   - **Entity-модель** (за `MODULE_ARCHITECTURE.md`): `cases`, `entities` + типізовані `*_details` (person/legal_entity/vehicle/location/account/contact/asset), `relationships`, `events`, `field_provenance` (походження кожного поля), `entity_media`
   - `capture_items` — стейджинг Capture Inbox (pending/attached/discarded)
+  - `reports` — згенеровані звіти (content_html + content_json снапшот + missing_fields)
 - **API, що реально працює**:
   - `POST /api/v1/auth/{login,logout,refresh,change-password}`
   - `GET/POST /api/v1/registries`, `POST /registries/{id}/test`, `POST /registries/{id}/query`
@@ -29,7 +30,8 @@
   - `POST /api/v1/relationships`, `GET /cases/{id}/relationships`
   - `POST/GET /api/v1/cases/{id}/events`
   - `POST /api/v1/capture/upload`, `GET /capture`, `GET /capture/{id}/file`, `POST /capture/{id}/attach`, `DELETE /capture/{id}`
-  - Перевірено end-to-end вручну: справа → сутність з деталями → зв'язок → відображення; upload файлу → attach до сутності → видно на картці сутності
+  - `GET /api/v1/report-templates`, `POST /api/v1/cases/{id}/reports`, `GET /reports`, `GET /cases/{id}/reports`, `GET/PATCH/DELETE /reports/{id}`, `GET /reports/{id}/export?export_format=docx`
+  - Перевірено end-to-end вручну: справа → сутність з деталями → зв'язок → відображення; upload файлу → attach до сутності → видно на картці сутності; генерація звіту → автозаповнені поля + підтягнута пов'язана сутність → DOCX-експорт (валідний .docx, перевірено через python-docx)
 - **Адаптери реєстрів** (`backend/osint_hub/integrations/registries/`) — рівень "API-інтеграція" з `MODULE_ARCHITECTURE.md` розділу 5:
   - `api_adapter.py` — робочий generic REST-адаптер
   - `almaz_adapter.py` — чесна заглушка
@@ -42,7 +44,9 @@
 - **Реально підключено до бекенду**: логін, **Справи** (список + деталі: реальні сутності, зв'язки, чекліст незаповнених полів — саме той механізм, що автоматично живить майбутній Report Generator), Реєстри (тепер вкладка в Налаштуваннях)
 - **Чесні заглушки** (видно в навігації, є опис плану, немає фейкового функціоналу): Відеонагляд, Recognition Lab, Моніторинг
 - **Capture Inbox — ГОТОВО ✓** (фаза 1, ручне тегування без AI): drag-and-drop/click upload, список pending/attached з прев'ю зображень, діалог прикріплення (справа → сутність), файли реально зберігаються на диску (`backend/storage/`, у git ignore) і показуються на картці сутності в Справі
-- **Ще на mock-даних**: Звіти (шаблони+архів), Граф зв'язків (поки демо-дані, не сутності конкретної справи), Аудит-лог (вкладка в Налаштуваннях)
+- **Report Generator — ГОТОВО ✓**: 4 шаблони (досьє на особу/юрособу, відеонагляд, розпізнання), кнопка "Сформувати звіт" на сторінці справи → автозаповнення з полів сутності + пов'язаних сутностей через Relationship → перегляд/mark-final/видалення/експорт у реальний .docx (`webapp/src/components/reports/`, `webapp/src/pages/ReportDetail.tsx`)
+- **Відомий розрив, не виправлено**: стара кнопка "Створити звіт" (Ctrl+R) в Navbar і стара `ReportModal` (mock, дані з `data/mock.ts`) все ще існують і не пов'язані з новим реальним Report Generator — це плутає, якщо натиснути її замість "Сформувати звіт" на сторінці справи. Треба або прибрати стару кнопку, або перенаправити її на новий флоу.
+- **Ще на mock-даних**: Граф зв'язків (поки демо-дані, не сутності конкретної справи), Аудит-лог (вкладка в Налаштуваннях)
 - **Старі сторінки лишені доступними за URL, але прибрані з навігації** (щоб нічого не зламати, за принципом документа "не переносити інструмент у новий патерн, доки новий не обкатаний"): `/tools` (старий Пошук: cards/json/map/media), `/analysis` (стара Аналітика), `/ai` (AI-асистент), `/audit` (старий Аудит-лог)
 
 ---
@@ -117,16 +121,20 @@ npm run dev
 - **CSP img-src потребує `blob:`** (`webapp/index.html`) — прев'ю зображень через `URL.createObjectURL()` інакше блокується.
 - **Авторизовані файли не можна віддавати через `<img src>`/`<a href>` напряму** — браузер не додасть Authorization-заголовок. Завантажуй через `apiClient` з `responseType: "blob"`, роби `URL.createObjectURL()`.
 - MUI `Select`/combobox інколи не реагує на автоматизований `computer.left_click` у browser-прев'ю (клік по реальній кнопці — так, по деяких MUI-віджетах — ні). Робочий обхід: `javascript_tool` з прямим `.click()` або послідовністю `pointerdown/mousedown/pointerup/mouseup/click` подій.
+- **Jinja2 `dict.items` пастка**: якщо словник має ключ `"items"` і в шаблоні звертаєшся `obj.items` (dot-notation), Jinja2 віддасть метод `dict.items()`, а не значення ключа — тиха помилка `TypeError: object has no len()`. Уникай ключа `"items"` у структурах, які підуть у Jinja2-шаблон (ми перейменували на `"entries"`).
+- **Jinja2 `Template()` за замовчуванням НЕ екранує HTML** — обов'язково `Template(src, autoescape=True)`, якщо в шаблон підставляються значення з user input (у нас — поля сутностей).
+- **HTTP-заголовки — тільки latin-1**: `Content-Disposition: filename="..."` з кирилицею падає з `UnicodeEncodeError`. Потрібен ASCII fallback + `filename*=UTF-8''<percent-encoded>` (RFC 5987).
 
 ---
 
 ## 5. Відкриті рішення / що обговорити далі
 
 1. **Вбудовані браузери** (для рівня "webview з імітацією логіну" з `MODULE_ARCHITECTURE.md` розділу 5): Electron+BrowserView або server-side Playwright+стрімінг. Відкладено.
-2. **Report Generator** (документ, розділ 8) — наступний логічний крок за планом (розділ 9, крок 5): шаблон + мапінг полів з entity-моделі, підсвітка порожніх обов'язкових полів (чекліст уже є в Справі, треба довести до генерації самого документа Word/PDF).
-3. **Статуси конекторів** (розділ 9, крок 6) — частково є (connected/auth_required/network_unavailable в SourceModulePanel), можна розширити.
-4. **Clipboard monitoring** (Capture Inbox фаза 2) — після Report Generator, за планом документа.
-5. Старі `/tools`, `/analysis`, `/ai`, `/audit` сторінки — коли Report Generator стабілізується, ці файли можна прибрати остаточно.
+2. **PDF-експорт звітів** — свідомо не робили (weasyprint/подібні мають системні залежності, боляче на Windows), зараз тільки .docx і HTML-перегляд у самому UI. Якщо PDF реально потрібен — треба окремо обговорити підхід.
+3. **Стара кнопка "Створити звіт" в Navbar / стара ReportModal** — mock, не пов'язана з новим Report Generator, плутає користувача. Треба прибрати або перенаправити.
+4. **Статуси конекторів** (розділ 9, крок 6) — частково є (connected/auth_required/network_unavailable в SourceModulePanel), можна розширити.
+5. **Clipboard monitoring** (Capture Inbox фаза 2) — наступна фаза за планом документа.
+6. Старі `/tools`, `/analysis`, `/ai`, `/audit` сторінки — коли AI-шар і Recognition Lab стабілізуються, ці файли можна прибрати остаточно.
 
 ---
 
