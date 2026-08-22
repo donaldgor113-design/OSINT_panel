@@ -16,18 +16,20 @@
 
 ### Backend (`backend/`) — FastAPI + PostgreSQL
 - **Стек**: FastAPI, async SQLAlchemy 2.0, Alembic, PostgreSQL, JWT (access+refresh), bcrypt, Fernet-шифрування секретів
-- **Таблиці** (3 міграції):
+- **Таблиці** (4 міграції):
   - `users`, `sessions`, `audit_logs`, `registries`, `queries` — базова інфраструктура
   - **Entity-модель** (за `MODULE_ARCHITECTURE.md`): `cases`, `entities` + типізовані `*_details` (person/legal_entity/vehicle/location/account/contact/asset), `relationships`, `events`, `field_provenance` (походження кожного поля), `entity_media`
+  - `capture_items` — стейджинг Capture Inbox (pending/attached/discarded)
 - **API, що реально працює**:
   - `POST /api/v1/auth/{login,logout,refresh,change-password}`
   - `GET/POST /api/v1/registries`, `POST /registries/{id}/test`, `POST /registries/{id}/query`
   - `POST/GET /api/v1/queries`, `GET /queries/{id}`, `DELETE /queries/{id}`
   - `POST/GET/PATCH /api/v1/cases`, `GET /cases/{id}`
-  - `POST/GET /api/v1/cases/{id}/entities`, `GET/PATCH/DELETE /entities/{id}`
+  - `POST/GET /api/v1/cases/{id}/entities`, `GET/PATCH/DELETE /entities/{id}` (entity response тепер включає `media_count`)
   - `POST /api/v1/relationships`, `GET /cases/{id}/relationships`
   - `POST/GET /api/v1/cases/{id}/events`
-  - Перевірено end-to-end вручну: справа → сутність з деталями → зв'язок → відображення
+  - `POST /api/v1/capture/upload`, `GET /capture`, `GET /capture/{id}/file`, `POST /capture/{id}/attach`, `DELETE /capture/{id}`
+  - Перевірено end-to-end вручну: справа → сутність з деталями → зв'язок → відображення; upload файлу → attach до сутності → видно на картці сутності
 - **Адаптери реєстрів** (`backend/osint_hub/integrations/registries/`) — рівень "API-інтеграція" з `MODULE_ARCHITECTURE.md` розділу 5:
   - `api_adapter.py` — робочий generic REST-адаптер
   - `almaz_adapter.py` — чесна заглушка
@@ -38,7 +40,8 @@
 - **Навігація перебудована під `MODULE_ARCHITECTURE.md`** (не під STANDARD-документ, він застарів):
   Дашборд (`/`) · **Справи** (`/cases`, `/cases/:id`) · Відеонагляд (`/surveillance`) · Recognition Lab (`/recognition`) · Моніторинг (`/monitoring`) · Capture Inbox (`/capture`) · Звіти (`/reports`) · Граф зв'язків (`/graph`) · Налаштування (`/settings`)
 - **Реально підключено до бекенду**: логін, **Справи** (список + деталі: реальні сутності, зв'язки, чекліст незаповнених полів — саме той механізм, що автоматично живить майбутній Report Generator), Реєстри (тепер вкладка в Налаштуваннях)
-- **Чесні заглушки** (видно в навігації, є опис плану, немає фейкового функціоналу): Відеонагляд, Recognition Lab, Моніторинг, Capture Inbox
+- **Чесні заглушки** (видно в навігації, є опис плану, немає фейкового функціоналу): Відеонагляд, Recognition Lab, Моніторинг
+- **Capture Inbox — ГОТОВО ✓** (фаза 1, ручне тегування без AI): drag-and-drop/click upload, список pending/attached з прев'ю зображень, діалог прикріплення (справа → сутність), файли реально зберігаються на диску (`backend/storage/`, у git ignore) і показуються на картці сутності в Справі
 - **Ще на mock-даних**: Звіти (шаблони+архів), Граф зв'язків (поки демо-дані, не сутності конкретної справи), Аудит-лог (вкладка в Налаштуваннях)
 - **Старі сторінки лишені доступними за URL, але прибрані з навігації** (щоб нічого не зламати, за принципом документа "не переносити інструмент у новий патерн, доки новий не обкатаний"): `/tools` (старий Пошук: cards/json/map/media), `/analysis` (стара Аналітика), `/ai` (AI-асистент), `/audit` (старий Аудит-лог)
 
@@ -111,16 +114,19 @@ npm run dev
 - **getpass на Windows не читає з pipe/redirected stdin** — `create_admin.py` тільки в реальному інтерактивному терміналі.
 - Git-ідентичність для цього репо виставлена локально (`git config --local`), не глобально.
 - Кожна `*_details` таблиця — 1:1 з `entities.id` (entity_id — і PK, і FK одночасно). Додавання нового поля сутності = ALTER TABLE відповідної `*_details`, не чіпає `entities`.
+- **CSP img-src потребує `blob:`** (`webapp/index.html`) — прев'ю зображень через `URL.createObjectURL()` інакше блокується.
+- **Авторизовані файли не можна віддавати через `<img src>`/`<a href>` напряму** — браузер не додасть Authorization-заголовок. Завантажуй через `apiClient` з `responseType: "blob"`, роби `URL.createObjectURL()`.
+- MUI `Select`/combobox інколи не реагує на автоматизований `computer.left_click` у browser-прев'ю (клік по реальній кнопці — так, по деяких MUI-віджетах — ні). Робочий обхід: `javascript_tool` з прямим `.click()` або послідовністю `pointerdown/mousedown/pointerup/mouseup/click` подій.
 
 ---
 
 ## 5. Відкриті рішення / що обговорити далі
 
-1. **Вбудовані браузери** (для рівня "webview з імітацією логіну" з `MODULE_ARCHITECTURE.md` розділу 5): Electron+BrowserView або server-side Playwright+стрімінг. Відкладено, обговоримо коли дійдемо до SourceModulePanel.
-2. **SourceModulePanel** (документ, розділ 4 і 9.3) — генерик-компонент "параметри пошуку / вкладки джерел / захоплення в сутність", пілот на пошуку людини. Наступна велика частина.
-3. **Capture Inbox фаза 1** (ручне тегування без AI) — іде одразу після пілота SourceModulePanel, за планом документа.
-4. **Report Generator** — шаблон + мапінг полів з entity-моделі, підсвітка порожніх обов'язкових полів (частково вже є як "чекліст" у Справі, треба довести до генерації самого документа).
-5. Старі `/tools`, `/analysis`, `/ai`, `/audit` сторінки — коли SourceModulePanel і Report Generator стабілізуються, ці файли можна прибрати остаточно.
+1. **Вбудовані браузери** (для рівня "webview з імітацією логіну" з `MODULE_ARCHITECTURE.md` розділу 5): Electron+BrowserView або server-side Playwright+стрімінг. Відкладено.
+2. **Report Generator** (документ, розділ 8) — наступний логічний крок за планом (розділ 9, крок 5): шаблон + мапінг полів з entity-моделі, підсвітка порожніх обов'язкових полів (чекліст уже є в Справі, треба довести до генерації самого документа Word/PDF).
+3. **Статуси конекторів** (розділ 9, крок 6) — частково є (connected/auth_required/network_unavailable в SourceModulePanel), можна розширити.
+4. **Clipboard monitoring** (Capture Inbox фаза 2) — після Report Generator, за планом документа.
+5. Старі `/tools`, `/analysis`, `/ai`, `/audit` сторінки — коли Report Generator стабілізується, ці файли можна прибрати остаточно.
 
 ---
 
